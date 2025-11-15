@@ -1,76 +1,235 @@
-# Argus : A Dynamic Reconnaissance Tool For Shodan
+## 🕊️ We Stand With Palestine
+
+We stand in solidarity with the Palestinian people against Israel's ongoing genocide and military occupation. We condemn the systematic violence that has claimed thousands of innocent lives, including countless children, and destroyed homes, hospitals, and schools.
+
+We affirm Palestine's right to exist, resist, and achieve liberation. From the river to the sea, Palestine will be free.
 
 
-Argus is a versatile reconnaissance tool designed for targeted information gathering using predefined dorks. Unlike traditional DNS enumerators, Argus goes beyond subdomain enumeration, retrieving both IP addresses and subdomains based on user-defined queries.
 
-## Features
+# Argus - Advanced Shodan Reconnaissance Tool
+Argus is a powerful, fully-featured reconnaissance tool built in Go, designed for cybersecurity researchers, penetration testers, and bug bounty hunters who rely on **Shodan OSINT intelligence** for mapping attack surfaces.
 
-- **Dork-Based Approach:** Utilize predefined dorks to tailor reconnaissance queries for specific information.
-- **IP and Subdomain Retrieval:** Retrieve comprehensive results by obtaining both IP addresses and subdomains.
-- **Command-Line Interface:** User-friendly CLI for easy customization of dorks and query parameters.
-- **Output Handling:** Save results to a file with support for managing unique entries and preventing duplicates.
+This tool automates domain reconnaissance, enumerates subdomains, discovers exposed IP addresses, queries ASNs and organizations, supports advanced Shodan dorks, and provides clean export-ready outputs.
 
-# Installation
+---
 
-To install Argus, you can use the `go install` command. Make sure you have Go installed on your system.
+## 📌 Purpose of Argus
+Argus is built to streamline reconnaissance during cybersecurity assessments by leveraging the Shodan API. Instead of manually crafting Shodan queries, switching between endpoints, or parsing results, Argus automates the entire reconnaissance pipeline.
 
-```bash
+### ✔ What Argus Solves
+- Automatically discovers subdomains for a target domain from multiple Shodan endpoints.
+- Extracts IPs associated with domains, organizations, and ASNs.
+- Performs complex Shodan dorking with predefined queries.
+- Filters results based on HTTP status codes.
+- Stores and manages your Shodan API key securely.
+- Provides clean, deduplicated output (subdomains, IPs, etc.).
+- Exports results to files in one command.
+
+### ✔ Who Is This Tool For?
+- Penetration testers
+- Bug bounty hunters
+- OSINT investigators
+- Red teamers
+- Cybersecurity engineers
+- Students learning Shodan API
+
+---
+
+## 🚀 Key Features
+### 🔍 **1. Domain Reconnaissance**
+Extract:
+- Subdomains
+- DNS entries
+- IP addresses associated with the domain
+- Hostnames found in Shodan’s host search
+- Subdomain records from `dns/domain` and `host/search`
+
+Argus performs:
+- Regex filtering
+- JSON parsing
+- Shodan DNS enumeration
+- Shodan host search scraping
+
+### 🛰 **2. ASN Enumeration**
+Search using:
+```
+asn:"AS12345"
+```
+Results include:
+- All IPs in that ASN
+- Hostnames attached to those IPs
+- Optional subdomain extraction
+- Optional HTTP status filtering
+
+### 🏢 **3. Organization Recon**
+Search using:
+```
+org:"Cloudflare"
+```
+Extract:
+- All IPs associated with an organization
+- Hostnames / subdomains
+- HTTP status-specific assets (e.g., only 200/404)
+
+### 🔐 **4. API Key Management**
+Argus automatically:
+- Reads your API key from:  
+  `~/go/pkg/shodanapikey.txt`
+- Prompts you if no key exists
+- Allows updating using:
+  ```
+  -capi NEW_KEY
+  ```
+
+Securely stored with `0600` permissions.
+
+### 🎯 **5. Predefined Dork Selector**
+Argus includes common Shodan dorks such as:
+- Certificate CN search  
+  `ssl.cert.subject.CN:"%s"`
+- Hostname dork  
+  `hostname:"%s"`
+- SSL match  
+  `ssl:"%s"`
+
+You may also append HTTP status filters.
+
+### 📊 **6. Output Control**
+Flags allow showing:
+- **Subdomains only** (`-s`)
+- **IPs only** (`-i`)
+- **Both** (default)
+
+### 💾 **7. File Export**
+You can export results to a file while keeping all output **unique and deduplicated**:
+```
+-o results.txt
+```
+
+---
+
+## 📦 Installation
+```
 go install github.com/ractiurd/argus@latest
 ```
 
-## Usage
+---
 
-Argus streamlines the reconnaissance process by allowing users to define search criteria through dorks. Users can specify their Shodan API key, target domain, and additional options via command-line arguments, providing a straightforward and customizable experience.
+## 🧪 Usage Examples
 
-### Example:
-
-```bash
-# Perform a reconnaissance search with a predefined dork
-./argus -apikey <YOUR_SHODAN_API_KEY> -target example.com -c -s -o results.txt
+### ▶ Basic domain scan
+```
+argus -t example.com
 ```
 
-
-### Command-Line Arguments
-
-- **-api:** Your Shodan API key (required).
-- **-org:** Organization name of the target.
-- **-t:** Target domain for reconnaissance (required).
-- **-c:** Choose a predefined dork.
-- **-s:** Print only subdomains.
-- **-i:** Print only IP addresses.
-- **-o:** Save results to a file.
-
- # Dorks argus use
-**SSL Certificate Subject Common Name and HTTP Status Code 200:**
-   ```plaintext
-   ssl.cert.subject.CN:"example.com" 200
+### ▶ Export only subdomains to a file
 ```
-**Hostname and HTTP Status Code 200:**
-   ```plaintext
-   shostname:"example.com" 200
+argus -t example.com -s -o subs.txt
 ```
-**SSL Version and HTTP Status Code 200**
-   ```plaintext
-   ssl:"example.com" 200
+
+### ▶ Scan an ASN for open hosts
 ```
-**Organization Name and HTTP Status Code 200:**
-   ```plaintext
-   org:"YourOrg" 200
+argus -asn AS15169
 ```
-**ASN and HTTP Status Code 200:**
-   ```plaintext
-   asn:"AS12345" 200
+
+### ▶ Scan an organization (Cloudflare)
 ```
-# Conclusion
+argus -org "Cloudflare"
+```
 
-Argus represents a new era in reconnaissance, offering a powerful and flexible approach to information gathering. Whether you are a security professional conducting targeted assessments or a researcher exploring the expansive world of cybersecurity, Argus is designed to elevate your reconnaissance capabilities.
+### ▶ Filter results by HTTP status code
+```
+argus -t example.com -r 200,403
+```
 
-We welcome your feedback, contributions, and bug reports. Feel free to explore the source code, submit issues, or even contribute to the development of Argus. Together, we can make this tool even more robust and effective.
+### ▶ Use predefined dorks
+```
+argus -t example.com -c
+```
 
-Thank you for choosing Argus. Happy reconnaissance!
+### ▶ Replace stored API key
+```
+argus -capi NEW_API_KEY
+```
+
+---
+
+## 📚 Command-Line Flags
+
+| Flag | Purpose |
+|------|---------|
+| `-t` | Target domain |
+| `-asn` | Search by ASN number |
+| `-org` | Search by organization name |
+| `-s` | Print only subdomains |
+| `-i` | Print only IP addresses |
+| `-c` | Choose predefined Shodan dork |
+| `-r` | Filter by HTTP status codes |
+| `-o` | Save results to file |
+| `-api` | Provide API key directly |
+| `-capi` | Update stored API key |
+| `-h` | Show help |
+
+---
+
+## 🔧 How It Works (High-Level Overview)
+
+### 1. **Shodan Host Search**
+Argus queries:
+```
+https://api.shodan.io/shodan/host/search
+```
+This returns:
+- IPs
+- Hostnames
+- Additional metadata (filtered)
+
+### 2. **Shodan DNS Enumeration**
+Queries:
+```
+https://api.shodan.io/dns/domain/{target}
+```
+This returns:
+- Subdomains (JSON: `subdomains`)
+- DNS records
+- Last-seen timestamps
+
+### 3. **Data Filtering & Deduplication**
+Everything stored via:
+```
+map[string]bool
+```
+Ensures clean results.
+
+### 4. **Regex Subdomain Extraction**
+Matches:
+```
+*.target.com
+```
+
+### 5. **API Key Handling**
+Securely saves or loads depending on user options.
+
+---
+
+## 🧑‍💻 Developer Notes
+- Written in **Go**
+- Uses Shodan’s REST API
+- Regex-based filtering
+- Supports custom dorks
+- Easy to modify for future expansions
+
+---
+
+## 🏁 Conclusion
+Argus is a robust, multi-feature Shodan reconnaissance toolkit intended to automate and accelerate the information-gathering phase of security research. Whether you're scanning domains, mapping infrastructure, or discovering exposed assets, Argus provides an efficient, automated workflow for Shodan-based intelligence.
 
 
-## Author
+---
 
-- **Author:** Ractiurd
-- **Twitter:** [@ractiurd](https://twitter.com/ractiurd)
+## 👤 Author
+**Ractiurd**  
+Twitter: twitter.com/ractiurd  
+Facebook: facebook.com/Ractiurd  
+
+
